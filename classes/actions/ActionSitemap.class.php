@@ -1,9 +1,23 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 /**
  * Набор действий для плагина генерации sitemap
  */
-class PluginSitemap_ActionSitemap extends ActionPlugin {
+class PluginSitemap_ActionSitemap extends ActionPlugin
+{
 
     /**
      * Инициализация
@@ -11,6 +25,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      * @return void
      */
     public function Init() {
+
         $this->SetDefaultEvent('index');
         Router::SetIsShowStats(false);
     }
@@ -21,6 +36,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      * @return void
      */
     protected function RegisterEvent() {
+
         $this->AddEvent('index', 'eventSitemapIndex');
         $this->AddEvent('sitemap', 'eventSitemap');
     }
@@ -31,11 +47,12 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      * @return void
      */
     public function eventSitemap() {
-        $iCurrPage = (int) $this->GetParam(1);
+
+        $iCurrPage = intval($this->GetParam(1));
         $aType = explode('_', $this->GetParam(0));
-        $sName='';
+        $sName = '';
         foreach ($aType as $val) {
-            $sName.=ucfirst($val);
+            $sName .= ucfirst($val);
         }
 
         try {
@@ -56,13 +73,16 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      * @return void
      */
     protected function eventSitemapIndex() {
+
         $iPerPage = Config::Get('plugin.sitemap.objects_per_page');
         $aCounters = array(
             'general' => 1,
-            'blogs' => (int) ceil($this->PluginSitemap_Blog_GetOpenCollectiveBlogsCount() / $iPerPage),
-            'topics' => (int) ceil($this->PluginSitemap_Topic_GetOpenTopicsCount() / $iPerPage),
+            'blogs'   => (int)ceil($this->PluginSitemap_Blog_GetBlogsCountForSitemap() / $iPerPage),
+            'topics'  => (int)ceil($this->PluginSitemap_Topic_GetTopicsCountForSitemap() / $iPerPage),
             // в sitemap пользователей в 3ри раза больше ссылок
-            'users' => (int) ceil($this->PluginSitemap_User_GetUsersCount() / Config::Get('plugin.sitemap.users_per_page')),
+            'users'   => (int)ceil(
+                    $this->PluginSitemap_User_GetUsersCountForSitemap() / Config::Get('plugin.sitemap.users_per_page')
+                ),
         );
 
         // Возможность сторонними плагинами добавлять свои данные в Sitemap Index
@@ -70,24 +90,20 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
         if (is_array($aExternalCounters)) {
             foreach ($aExternalCounters as $k => $v) {
                 if (is_string($k) && is_numeric($v)) {
-                    $aCounters[$k] = (int) $v;
+                    $aCounters[$k] = (int)$v;
                 }
             }
         }
 
-//        /**
-//         * Вызов хуков
-//         */
-//        Engine::getInstance()->_CallModule('Hook_Run',array('sitemap_index_counters',&$aCounters));
         // Генерируем ссылки на конечные Sitemap'ы для Sitemap Index
         $aData = array();
 
-        $sRootWeb = rtrim(str_replace('index/', '', Router::GetPath('index')), '/');
+        $sRootUrl = F::File_RootUrl(true);
         foreach ($aCounters as $sType => $iCount) {
             if ($iCount > 0) {
                 for ($i = 1; $i <= $iCount; ++$i) {
                     $aData[] = array(
-                        'loc' => $sRootWeb . '/sitemap_' . $sType . '_' . $i . '.xml'
+                        'loc' => $sRootUrl . 'sitemap_' . $sType . '_' . $i . '.xml'
                     );
                 }
             }
@@ -107,12 +123,17 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      * Устанавливат соответсвующий сonten-type и шаблон для sitemap'a
      *
      * @param array $aData
+     * @param string $sTemplate
+     *
      * @return void
      */
     protected function _displaySitemap(array $aData, $sTemplate = 'sitemap.tpl') {
-        header("Content-type: application/xml");
+
+        header('Content-type: application/xml');
         $this->Viewer_Assign('aData', $aData);
-        $this->SetTemplate(Plugin::GetTemplatePath('sitemap') . $sTemplate);
+        $this->SetTemplate(Plugin::GetTemplateDir('sitemap') . 'tpls/' . $sTemplate);
     }
 
 }
+
+// EOF

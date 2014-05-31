@@ -1,9 +1,22 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 // Добавляем rewrite rules для sitemap'ов в роутер
 $aRouterUri = Config::Get('router.uri');
 $aRouterUri['/^sitemap\.xml/i'] = "sitemap";
-$aRouterUri['/^sitemap_(\w+)_(\d+)\.xml/i'] = "sitemap/sitemap/\\1/\\2";
+$aRouterUri['/^sitemap_(\w+)_(\d+)\.xml/i'] = "sitemap/sitemap/$1/$2";
 Config::Set('router.uri', $aRouterUri);
 
 // Добавляем экшен плагина в роутер
@@ -12,8 +25,8 @@ Config::Set('router.page.sitemap', 'PluginSitemap_ActionSitemap');
 
 $config = array();
 
-$config['objects_per_page'] = 1000; // максимальное количество ссылок на одной странице карты
-$config['users_per_page']   = 1000;    // максимальное количество пользователей на одной странице карты
+$config['objects_per_page'] = 1000;     // максимальное количество ссылок на одной странице карты
+$config['users_per_page']   = 1000;     // максимальное количество пользователей на одной странице карты
 
 /**
  * Настройки времени жизни кеша данных, приоритета страниц, вероятной частоты изменений страницы
@@ -69,3 +82,5 @@ $config['users'] = array (
 );
 
 return $config;
+
+// EOF

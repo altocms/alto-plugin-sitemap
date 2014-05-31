@@ -1,25 +1,40 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 /**
  * Маппер Blog модуля Blog плагина Sitemap
  */
-class PluginSitemap_ModuleBlog_MapperBlog extends ModuleBlog_MapperBlog {
+class PluginSitemap_ModuleBlog_MapperBlog extends Mapper {
         
     /**
      * Количество открытых коллективных блогов
      *
      * @return integer
      */
-    public function getNumberOfCollectiveBlogs() {
-        $sql = 'SELECT
-                        COUNT(`blog`.`blog_id`)
-                FROM
-                        `' . Config::Get('db.table.blog') . '` AS `blog`
-                WHERE
-                        `blog`.`blog_type` = "open"
-                ';
+    public function getCountOfOpenBlogs() {
 
-        return $this->oDb->selectCell($sql);
+        $aBlogTypes = $this->Blog_GetOpenBlogTypes();
+        $sql = "SELECT
+                        COUNT(*)
+                FROM
+                        ?_blog
+                WHERE
+                        blog_type IN (?a)
+                ";
+
+        return $this->oDb->selectCell($sql, $aBlogTypes);
     }
 
     /**
@@ -30,20 +45,22 @@ class PluginSitemap_ModuleBlog_MapperBlog extends ModuleBlog_MapperBlog {
      * @param integer $iPerPage
      * @return array
      */
-    public function getIdCollectiveBlogs(&$iCount, $iCurrPage, $iPerPage) {
+    public function getIdsOfOpenBlogs(&$iCount, $iCurrPage, $iPerPage) {
+
+        $aBlogTypes = $this->Blog_GetOpenBlogTypes();
         $sql = 'SELECT
-                        `blog`.`blog_id`
+                        blog_id
                 FROM
-                        `' . Config::Get('db.table.blog') . '` AS `blog`
+                        ?_blog
                 WHERE
-                        `blog`.`blog_type` = "open"
+                        blog_type IN (?a)
                 ORDER BY
-                        `blog`.`blog_id` ASC
+                        blog_id ASC
                 LIMIT
                         ?d, ?d
                 ';
         $aReturn = array();
-        if ($aRows = $this->oDb->selectPage($iCount, $sql, ($iCurrPage-1) * $iPerPage, $iPerPage)) {
+        if ($aRows = $this->oDb->selectPage($iCount, $sql, $aBlogTypes, ($iCurrPage-1) * $iPerPage, $iPerPage)) {
             foreach ($aRows as $aRow) {
                 $aReturn[] = $aRow['blog_id'];
             }
@@ -53,3 +70,5 @@ class PluginSitemap_ModuleBlog_MapperBlog extends ModuleBlog_MapperBlog {
     }
 
 }
+
+// EOF

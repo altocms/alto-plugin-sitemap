@@ -1,45 +1,62 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
-class PluginSitemap_ModuleBlog_EntityBlog extends PluginSitemap_Inherit_ModuleBlog_EntityBlog {
+class PluginSitemap_ModuleBlog_EntityBlog extends PluginSitemap_Inherits_ModuleBlog_EntityBlog {
 
     /**
      * Get blog add date
-     * It's temporary fix for bug in LS 0.4.2 http://trac.lsdev.ru/livestreet/ticket/158
      *
      * @return string|null
      */
     public function getDateAdd() {
-        return $this->_aData['blog_date_add'];
+
+        return $this->getProp('blog_date_add');
     }
 
     /**
      * Get blog edit date
-     * It's temporary fix for bug in LS 0.4.2 http://trac.lsdev.ru/livestreet/ticket/158
-     * 
+     *
      * @return string|null
      */
     public function getDateEdit() {
-        return $this->_aData['blog_date_edit'];
+
+        return $this->getProp('blog_date_edit');
     }
 
     /**
      * Set blog add date
-     * It's temporary fix for bug in LS 0.4.2 http://trac.lsdev.ru/livestreet/ticket/158
-     * 
+     *
+     * @param $data
+     *
      * @return void
      */
     public function setDateAdd($data) {
-        $this->_aData['blog_date_add'] = $data;
+
+        $this->setProp('blog_date_add', $data);
     }
 
     /**
      * Set blog edit date
-     * It's temporary fix for bug in LS 0.4.2 http://trac.lsdev.ru/livestreet/ticket/158
-     * 
+     *
+     * @param $data
+     *
      * @return void
      */
     public function setDateEdit($data) {
-        $this->_aData['blog_date_edit'] = $data;
+
+        $this->setProp('blog_date_edit', $data);
     }
 
     /**
@@ -48,6 +65,9 @@ class PluginSitemap_ModuleBlog_EntityBlog extends PluginSitemap_Inherit_ModuleBl
      * @return string
      */
     public function getDateLastMod() {
+
         return is_null($this->getDateEdit()) ? $this->getDateAdd() : $this->getDateEdit();
     }
 }
+
+// EOF

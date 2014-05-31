@@ -1,10 +1,23 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 /**
  * Запрещаем напрямую через браузер обращение к этому файлу.
  */
 if (!class_exists('Plugin')) {
-    die('Hacking attemp!');
+    die('Hacking attempt!');
 }
 
 /**
@@ -41,10 +54,6 @@ class PluginSitemap extends Plugin {
      * @return void
      */
     public function Init() {
-        // @todo в LS r986 эти пути добавили в ядро движка
-        // http://trac.lsdev.ru/livestreet/changeset/986
-        // путь к папке темплейтов плагина
-        $this->Viewer_Assign('sTemplateWebPathPluginSitemap', Plugin::GetTemplateWebPath(__CLASS__));
     }
 
     /**
@@ -57,3 +66,5 @@ class PluginSitemap extends Plugin {
     }
 
 }
+
+// EOF

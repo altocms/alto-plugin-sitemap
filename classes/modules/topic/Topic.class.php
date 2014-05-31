@@ -1,23 +1,25 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 /**
  * Модуль Topic плагина Sitemap
  */
 class PluginSitemap_ModuleTopic extends Module {
 
-    /**
-     * Mapper
-     * @var PluginSitemap_ModuleTopic_MapperTopic
-     */
-    protected $oMapper;
-
-    /**
-     * Инициализация
-     *
-     * @return void
-     */
     public function Init() {
-        $this->oMapper = Engine::GetMapper(__CLASS__);
+        // npthing
     }
 
     /**
@@ -25,12 +27,12 @@ class PluginSitemap_ModuleTopic extends Module {
      *
      * @return array
      */
-    protected function _getFilterForTopics() {
+    protected function _getSitemapFilterForTopics() {
+
         return array(
-            'blog_type' => array(
-                'open', 'personal',
-            ),
+            'blog_type' => $this->Blog_GetOpenBlogTypes(),
             'topic_publish' => 1,
+            'topic_index_ignore' => 0,
         );
     }
 
@@ -39,8 +41,9 @@ class PluginSitemap_ModuleTopic extends Module {
      *
      * @return integer
      */
-    public function getOpenTopicsCount() {
-        return (int) $this->Topic_GetCountTopicsByFilter($this->_getFilterForTopics());
+    public function GetTopicsCountForSitemap() {
+
+        return (int) $this->Topic_GetCountTopicsByFilter($this->_getSitemapFilterForTopics());
     }
 
     /**
@@ -49,16 +52,17 @@ class PluginSitemap_ModuleTopic extends Module {
      * @param integer $iCurrPage
      * @return array
      */
-    public function getOpenTopicsForSitemap($iCurrPage = 0) {
+    public function getTopicsForSitemap($iCurrPage = 0) {
+
         $sCacheKey = $this->PluginSitemap_Sitemap_GetCacheIdPrefix()
                      . "sitemap_topics_{$iCurrPage}_" . Config::Get('plugin.sitemap.objects_per_page');
 
         if (false === ($aData = $this->Cache_Get($sCacheKey))) {
             $aTopics = $this->Topic_GetTopicsByFilter(
-                    $this->_getFilterForTopics(),
+                    $this->_getSitemapFilterForTopics(),
                     $iCurrPage,
                     Config::Get('plugin.sitemap.objects_per_page'),
-                    array('blog' => array())
+                    array('blog' => array('owner'=>array()))
             );
 
             $aData = array();
@@ -80,3 +84,5 @@ class PluginSitemap_ModuleTopic extends Module {
     }
 
 }
+
+// EOF

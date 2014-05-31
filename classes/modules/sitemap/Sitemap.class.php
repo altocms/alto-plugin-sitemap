@@ -1,4 +1,17 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 /**
  * Модуль для плагина генерации Sitemap
@@ -6,18 +19,11 @@
 class PluginSitemap_ModuleSitemap extends Module {
 
     /**
-     * Маппер
-     * @var PluginSitemap_ModuleSitemap_MapperSitemap
-     */
-    protected $oMapper;
-
-    /**
      * Инициализация модуля
      *
      * @return void
      */
     public function Init() {
-        $this->oMapper = Engine::GetMapper(__CLASS__);
     }
 
     /**
@@ -27,6 +33,7 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return string - дата в формате W3C Datetime (http://www.w3.org/TR/NOTE-datetime)
      */
     private function _convDateToLastMod($mDate = null) {
+
         if (is_null($mDate)) {
             return null;
         }
@@ -45,6 +52,7 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return array 
      */
     public function getDataForSitemapRow($sUrl, $sLastMod = null, $sChangeFreq = null, $sPriority = null) {
+
         return array(
             'loc' => $sUrl,
             'lastmod' => $this->_convDateToLastMod($sLastMod),
@@ -60,6 +68,7 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return array
      */
     public function getExternalCounters() {
+
         return array();
     }
 
@@ -71,6 +80,7 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return array
      */
     public function getExternalLinks() {
+
         return array();
     }
 
@@ -80,6 +90,7 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return string
      */
     public function getCacheIdPrefix() {
+
         return '';
     }
 
@@ -90,15 +101,17 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return array
      */
     public function getDataForGeneral($iCurrPage) {
+
+        $sRootUrl = F::File_RootUrl(true);
         $aData = array();
         $aData[] = $this->GetDataForSitemapRow(
-            Config::Get('path.root.web'),
+            $sRootUrl,
             time(),
             Config::Get('plugin.sitemap.general.mainpage.sitemap_priority'),
             Config::Get('plugin.sitemap.general.mainpage.sitemap_changefreq')
         );
         $aData[] = $this->GetDataForSitemapRow(
-            Config::Get('path.root.web') . '/comments/',
+            $sRootUrl . 'comments/',
             null, //time(),
             Config::Get('plugin.sitemap.general.comments.sitemap_priority'),
             Config::Get('plugin.sitemap.general.comments.sitemap_changefreq')
@@ -113,7 +126,8 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return array
      */
     public function getDataForBlogs($iCurrPage) {
-        return $this->PluginSitemap_Blog_GetOpenCollectiveBlogsForSitemap($iCurrPage);
+
+        return $this->PluginSitemap_Blog_GetBlogsForSitemap($iCurrPage);
     }
 
     /**
@@ -123,7 +137,8 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return void
      */
     public function getDataForTopics($iCurrPage) {
-        return $this->PluginSitemap_Topic_GetOpenTopicsForSitemap($iCurrPage);
+
+        return $this->PluginSitemap_Topic_GetTopicsForSitemap($iCurrPage);
     }
 
     /**
@@ -133,7 +148,10 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @return void
      */
     public function getDataForUsers($iCurrPage) {
+
         return $this->PluginSitemap_User_GetUsersForSitemap($iCurrPage);
     }
 
 }
+
+// EOF

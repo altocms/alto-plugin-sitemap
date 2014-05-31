@@ -1,4 +1,17 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 /**
  * Модуль User плагина Sitemap
@@ -17,6 +30,7 @@ class PluginSitemap_ModuleUser extends Module {
      * @return void
      */
     public function Init() {
+
         $this->oMapper = Engine::GetMapper(__CLASS__);
     }
 
@@ -26,7 +40,8 @@ class PluginSitemap_ModuleUser extends Module {
      *
      * @return integer
      */
-    public function getUsersCount() {
+    public function getUsersCountForSitemap() {
+
         $aStatUsers = $this->User_GetStatUsers();
         return $aStatUsers['count_all'];
     }
@@ -83,3 +98,5 @@ class PluginSitemap_ModuleUser extends Module {
     }
 
 }
+
+// EOF

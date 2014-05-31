@@ -1,4 +1,17 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 /**
  * Маппер User модуля User плагина Sitemap
@@ -6,7 +19,7 @@
 class PluginSitemap_ModuleUser_MapperUser extends Mapper {
 
     /**
-     * Список айдишек активных пользователей
+     * Список ID активированных пользователей
      *
      * @param integer $iCount
      * @param integer $iCurrPage
@@ -14,14 +27,15 @@ class PluginSitemap_ModuleUser_MapperUser extends Mapper {
      * @return array
      */
     public function getUsersId(&$iCount, $iCurrPage, $iPerPage) {
+
         $sql = 'SELECT
-                    `user`.`user_id`
+                    user_id
                 FROM
-                    `' . Config::Get('db.table.user') . '` AS `user`
+                    ?_user
                 WHERE
-                    `user`.`user_activate` = 1
+                    user_activate=1
                 ORDER BY
-                    `user`.`user_id` ASC
+                    user_id ASC
                 LIMIT
                     ?d, ?d
                 ';
@@ -36,3 +50,4 @@ class PluginSitemap_ModuleUser_MapperUser extends Mapper {
     }
 
 }
+// EOF

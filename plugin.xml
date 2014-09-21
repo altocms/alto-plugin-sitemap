@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
+    <id>sitemap</id>
     <name>
         <lang name="default">Sitemap</lang>
     </name>
@@ -8,9 +9,12 @@
     </author>
     <homepage>http://altocms.com</homepage>
     <version>1.0</version>
-    <alto>
-        <version>1.0.1</version>
-    </alto>
+    <dirname>sitemap</dirname>
+    <requires>
+        <alto>
+            <version>1.0.1</version>
+        </alto>
+    </requires>
     <description>
         <lang name="default">
             Generates xml-file with information for search engines. The file is located at

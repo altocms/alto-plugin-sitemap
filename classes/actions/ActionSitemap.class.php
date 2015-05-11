@@ -16,8 +16,7 @@
 /**
  * Набор действий для плагина генерации sitemap
  */
-class PluginSitemap_ActionSitemap extends ActionPlugin
-{
+class PluginSitemap_ActionSitemap extends ActionPlugin {
 
     /**
      * Инициализация
@@ -37,8 +36,8 @@ class PluginSitemap_ActionSitemap extends ActionPlugin
      */
     protected function RegisterEvent() {
 
-        $this->AddEvent('index', 'eventSitemapIndex');
-        $this->AddEvent('sitemap', 'eventSitemap');
+        $this->AddEvent('index', 'EventSitemapIndex');
+        $this->AddEvent('sitemap', 'EventSitemap');
     }
 
     /**
@@ -46,7 +45,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin
      *
      * @return void
      */
-    public function eventSitemap() {
+    public function EventSitemap() {
 
         $iCurrPage = intval($this->GetParam(1));
         $aType = explode('_', $this->GetParam(0));
@@ -72,7 +71,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin
      *
      * @return void
      */
-    protected function eventSitemapIndex() {
+    protected function EventSitemapIndex() {
 
         $iPerPage = Config::Get('plugin.sitemap.objects_per_page');
         $aCounters = array(
@@ -101,10 +100,19 @@ class PluginSitemap_ActionSitemap extends ActionPlugin
         $sRootUrl = F::File_RootUrl(true);
         foreach ($aCounters as $sType => $iCount) {
             if ($iCount > 0) {
-                for ($i = 1; $i <= $iCount; ++$i) {
-                    $aData[] = array(
-                        'loc' => $sRootUrl . 'sitemap_' . $sType . '_' . $i . '.xml'
+                for ($iPage = 1; $iPage <= $iCount; ++$iPage) {
+                    $aItem = array(
+                        'loc' => $sRootUrl . 'sitemap_' . $sType . '_' . $iPage . '.xml'
                     );
+                    $sChangeFreq = Config::Get('plugin.sitemap.' . $sType . '.sitemap_changefreq');
+                    if ($sChangeFreq) {
+                        $aItem['changefreq'] = $sChangeFreq;
+                    }
+                    $sDate = $this->PluginSitemap_Sitemap_GetLastMod($sType, $iPage);
+                    if ($sDate) {
+                        $aItem['lastmod'] = $sDate;
+                    }
+                    $aData[] = $aItem;
                 }
             }
         }

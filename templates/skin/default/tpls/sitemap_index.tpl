@@ -6,6 +6,8 @@
 {foreach from=$aData item=aItem}
     <sitemap>
         <loc>{$aItem.loc}</loc>
+        {if $aItem.lastmod}<lastmod>{$aItem.lastmod}</lastmod>{/if}
+        {if $aItem.changefreq}<changefreq>{$aItem.changefreq}</changefreq>{/if}
     </sitemap>
 {/foreach}
 </sitemapindex>

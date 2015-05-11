@@ -31,13 +31,14 @@ $config['users_per_page']   = 1000;     // максимальное количе
 /**
  * Настройки времени жизни кеша данных, приоритета страниц, вероятной частоты изменений страницы
  *
- * cache_lifetime - время жизни кеша для наборов извлекаемых из БД. значение задается в секундах
- * sitemap_priority - приоритет страницы. значение от 0 до 1
- * sitemap_changefreq - вероятная частота изменений страницы. значения always|hourly|daily|weekly|monthly|yearly|never
+ * cache_lifetime - время жизни кеша для наборов извлекаемых из БД, значение задается в секундах
+ * sitemap_priority - приоритет страницы, значение от 0.0 до 1.0
+ * sitemap_changefreq - вероятная частота изменений страницы, значения: always|hourly|daily|weekly|monthly|yearly|never
  */
 
 // Главная страница и комментарии
 $config['general'] = array (
+    'sitemap_changefreq' => 'hourly',
     // Главная страница
     'mainpage' => array (
         'sitemap_priority' => '1',

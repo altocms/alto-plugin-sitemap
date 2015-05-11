@@ -152,6 +152,37 @@ class PluginSitemap_ModuleSitemap extends Module {
         return $this->PluginSitemap_User_GetUsersForSitemap($iCurrPage);
     }
 
+    public function GetLastMod($sType, $iPage) {
+
+        $sDate = null;
+        if ($sType == 'general') {
+            $aTopics = $this->Topic_GetTopicsLast(1);
+            if ($aTopics) {
+                $oTopic = reset($aTopics);
+                if ($oTopic->getTopicDateEdit()) {
+                    $sDate = $oTopic->getTopicDateEdit();
+                } elseif ($oTopic->getTopicDateShow()) {
+                    $sDate = $oTopic->getTopicDateShow();
+                } else {
+                    $sDate = $oTopic->getTopicDateAdd();
+                }
+            }
+            $aComments = $this->Comment_GetCommentsOnline('topic', 1);
+            if ($aComments) {
+                $oComment = reset($aComments);
+                if ($oComment->getDateEdit()) {
+                    $sDate = $oComment->getCommentDateEdit();
+                } else {
+                    $sDate = $oComment->getCommentDate();
+                }
+            }
+        }
+        if ($sDate && strpos($sDate, ' ')) {
+            $sDate = str_replace(' ', 'T', $sDate);
+        }
+
+        return $sDate;
+    }
 }
 
 // EOF

@@ -57,8 +57,8 @@ class PluginSitemap_ModuleBlog extends Module {
                 $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
                         $oBlog->getUrlFull(),
                         null,
-                        Config::Get('plugin.sitemap.blogs.sitemap_priority'),
-                        Config::Get('plugin.sitemap.blogs.sitemap_changefreq')
+                    Config::Get('plugin.sitemap.blogs.sitemap_changefreq'),
+                        Config::Get('plugin.sitemap.blogs.sitemap_priority')
                 );
 
                 // @todo страницы блога разбиты на подстраницы. значит нужно генерировать

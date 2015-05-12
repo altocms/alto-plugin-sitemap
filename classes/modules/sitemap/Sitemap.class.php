@@ -46,18 +46,19 @@ class PluginSitemap_ModuleSitemap extends Module {
      * Возвращает массив с данными для генерации sitemap'а
      *
      * @param string $sUrl
-     * @param mixed $sLastMod
-     * @param mixed $sChangeFreq
-     * @param mixed $sPriority
-     * @return array 
+     * @param string $sLastMod
+     * @param string $sChangeFreq
+     * @param float  $nPriority
+     *
+     * @return array
      */
-    public function getDataForSitemapRow($sUrl, $sLastMod = null, $sChangeFreq = null, $sPriority = null) {
+    public function getDataForSitemapRow($sUrl, $sLastMod = null, $sChangeFreq = null, $nPriority = null) {
 
         return array(
             'loc' => $sUrl,
             'lastmod' => $this->_convDateToLastMod($sLastMod),
-            'priority' => $sChangeFreq,
-            'changefreq' => $sPriority,
+            'changefreq' => $sChangeFreq,
+            'priority' => $nPriority,
         );
     }
 
@@ -107,14 +108,14 @@ class PluginSitemap_ModuleSitemap extends Module {
         $aData[] = $this->GetDataForSitemapRow(
             $sRootUrl,
             time(),
-            Config::Get('plugin.sitemap.general.mainpage.sitemap_priority'),
-            Config::Get('plugin.sitemap.general.mainpage.sitemap_changefreq')
+            Config::Get('plugin.sitemap.general.mainpage.sitemap_changefreq'),
+            Config::Get('plugin.sitemap.general.mainpage.sitemap_priority')
         );
         $aData[] = $this->GetDataForSitemapRow(
             $sRootUrl . 'comments/',
             null, //time(),
-            Config::Get('plugin.sitemap.general.comments.sitemap_priority'),
-            Config::Get('plugin.sitemap.general.comments.sitemap_changefreq')
+            Config::Get('plugin.sitemap.general.comments.sitemap_changefreq'),
+            Config::Get('plugin.sitemap.general.comments.sitemap_priority')
         );
         return $aData;
     }

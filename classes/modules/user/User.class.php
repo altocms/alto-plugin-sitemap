@@ -67,27 +67,27 @@ class PluginSitemap_ModuleUser extends Module {
             foreach ($aUsers as $oUser) {
                 // профиль пользователя
                 $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
-                        $oUser->getUserWebPath(),
-                        $oUser->getDateLastMod(),
-                        Config::Get('plugin.sitemap.users.profile.sitemap_priority'),
-                        Config::Get('plugin.sitemap.users.profile.sitemap_changefreq')
+                    $oUser->getUserWebPath(),
+                    $oUser->getDateLastMod(),
+                    Config::Get('plugin.sitemap.users.profile.sitemap_changefreq'),
+                    Config::Get('plugin.sitemap.users.profile.sitemap_priority')
                 );
 
                 // публикации пользователя
                 $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
-                        $oUser->getUserTopicsWebPath(),
-                        // @todo временем изменения страницы публикаций должно быть время последней публикации пользователя
-                        null,
-                        Config::Get('plugin.sitemap.users.my.sitemap_priority'),
-                        Config::Get('plugin.sitemap.users.my.sitemap_changefreq')
+                    $oUser->getUserTopicsWebPath(),
+                    // @todo временем изменения страницы публикаций должно быть время последней публикации пользователя
+                    null,
+                    Config::Get('plugin.sitemap.users.my.sitemap_changefreq'),
+                    Config::Get('plugin.sitemap.users.my.sitemap_priority')
                 );
 
                 // комментарии пользователя
                 $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
-                        $oUser->getUserCommentsWebPath(),
-                        $oUser->getDateCommentLast(),
-                        Config::Get('plugin.sitemap.users.comments.sitemap_priority'),
-                        Config::Get('plugin.sitemap.users.comments.sitemap_changefreq')
+                    $oUser->getUserCommentsWebPath(),
+                    $oUser->getDateCommentLast(),
+                    Config::Get('plugin.sitemap.users.comments.sitemap_changefreq'),
+                    Config::Get('plugin.sitemap.users.comments.sitemap_priority')
                 );
 
                 $this->Cache_Set($aData, $sCacheKey, array('user_new', 'user_update'), Config::Get('plugin.sitemap.users.cache_lifetime'));

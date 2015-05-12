@@ -70,8 +70,8 @@ class PluginSitemap_ModuleTopic extends Module {
                 $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
                         $oTopic->getUrl(),
                         $oTopic->getDateLastMod(),
-                        Config::Get('plugin.sitemap.topics.sitemap_priority'),
-                        Config::Get('plugin.sitemap.topics.sitemap_changefreq')
+                        Config::Get('plugin.sitemap.topics.sitemap_changefreq'),
+                        Config::Get('plugin.sitemap.topics.sitemap_priority')
                 );
             }
 

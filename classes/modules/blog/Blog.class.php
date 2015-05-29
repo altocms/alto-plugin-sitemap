@@ -19,6 +19,22 @@
 class PluginSitemap_ModuleBlog extends PluginSitemap_Inherits_ModuleBlog {
 
     /**
+     * Mapper
+     * @var PluginSitemap_ModuleBlog_MapperBlog
+     */
+    protected $oMapper;
+
+    /**
+     * Инициализация
+     *
+     * @return void
+     */
+    public function Init() {
+
+        $this->oMapper = Engine::GetMapper(__CLASS__);
+    }
+
+    /**
      * Количество коллективных блогов
      *
      * @return integer

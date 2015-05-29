@@ -13,72 +13,94 @@
  *----------------------------------------------------------------------------
  */
 
-// Добавляем rewrite rules для sitemap'ов в роутер
-$aRouterUri = Config::Get('router.uri');
-$aRouterUri['/^sitemap\.xml/i'] = "sitemap";
-$aRouterUri['/^sitemap_(\w+)_(\d+)\.xml/i'] = "sitemap/sitemap/$1/$2";
-Config::Set('router.uri', $aRouterUri);
-
 // Добавляем экшен плагина в роутер
 Config::Set('router.page.sitemap', 'PluginSitemap_ActionSitemap');
 
+$config['$root$']['router']['uri'] = array(
+    'sitemap.xml' => 'sitemap',
+    '[/^sitemap_(\w+)_(\d+)\.xml$/i]' => 'sitemap/sitemap/$1/$2',
+);
 
-$config = array();
+$config['items_per_page'] = 100;   // максимальное количество ссылок на одной странице карты
+$config['users_per_page'] = 100;   // максимальное количество пользователей на одной странице карты
 
-$config['objects_per_page'] = 1000;     // максимальное количество ссылок на одной странице карты
-$config['users_per_page']   = 1000;     // максимальное количество пользователей на одной странице карты
-
+$config['default'] = array(
+    'sitemap' => array(
+        'cache_lifetime' => 'P1D', // 1 day
+        'changefreq'     => 'daily',
+        'priority'       => 0.7,
+    ),
+    'url' => array(
+        'changefreq'     => 'weekly',
+        'priority'       => 0.7,
+    ),
+);
 /**
  * Настройки времени жизни кеша данных, приоритета страниц, вероятной частоты изменений страницы
  *
  * cache_lifetime - время жизни кеша для наборов извлекаемых из БД, значение задается в секундах
- * sitemap_priority - приоритет страницы, значение от 0.0 до 1.0
- * sitemap_changefreq - вероятная частота изменений страницы, значения: always|hourly|daily|weekly|monthly|yearly|never
+ * priority - приоритет страницы, значение от 0.0 до 1.0
+ * changefreq - вероятная частота изменений страницы, значения: always|hourly|daily|weekly|monthly|yearly|never
  */
 
-// Главная страница и комментарии
-$config['general'] = array (
-    'sitemap_changefreq' => 'hourly',
-    // Главная страница
-    'mainpage' => array (
-        'sitemap_priority' => '1',
-        'sitemap_changefreq' => 'hourly'
-    ),
-    // Страница комментариев
-    'comments' => array (
-        'sitemap_priority' => '0.7',
-        'sitemap_changefreq' => 'hourly'
+$config['type']['index'] = array(
+    //'cache_lifetime' => 'PT1H', // 1 hour
+    'sitemap' => array(
+        'general',
+        'topics',
+        'blogs',
+        'users',
     ),
 );
-// Блоги
-$config['blogs'] = array (
-    'cache_lifetime' => 60 * 60 * 8, // 8 часов
-    'sitemap_priority' => '0.8',
-    'sitemap_changefreq' => 'weekly'
+
+// Главная страница и комментарии
+$config['type']['general'] = array (
+    'cache_lifetime' => 'PT1H', // 1 hour
+    'changefreq' => 'hourly',
+    'url' => array(
+        // Главная страница
+        'mainpage' => array (
+            'loc' => '___path.root.url___',
+            'priority' => '1',
+            'changefreq' => 'hourly'
+        ),
+        // Страница комментариев
+        'comments' => array (
+            'loc' => '___path.root.url___/comments/',
+            'priority' => '0.7',
+            'changefreq' => 'hourly'
+        ),
+    ),
 );
 // Записи
-$config['topics'] = array (
+$config['type']['topics'] = array (
     'cache_lifetime' => 60 * 60 * 0.5, // 30 минут
-    'sitemap_priority' => '0.9',
-    'sitemap_changefreq' => 'weekly'
+    'priority' => array(1, 1, 1, 0.9, 0.9, 0.9, 0.8),
+    'changefreq' => array('hourly', 'hourly', 'hourly', 'daily', 'daily', 'daily', 'weekly'),
+);
+// Блоги
+$config['type']['blogs'] = array (
+    'cache_lifetime' => 60 * 60 * 8, // 8 часов
+    'priority' => '0.8',
+    'changefreq' => 'weekly'
 );
 // Пользователи
-$config['users'] = array (
+$config['type']['users'] = array (
     'cache_lifetime' => 60 * 60 * 1, // 1 час
     // Профиль пользователя
     'profile' => array (
-        'sitemap_priority' => '0.5',
-        'sitemap_changefreq' => 'weekly'
+        'priority' => '0.5',
+        'changefreq' => 'weekly'
     ),
     // Комментарии пользователя
     'comments' => array (
-        'sitemap_priority' => '0.7',
-        'sitemap_changefreq' => 'weekly'
+        'priority' => '0.7',
+        'changefreq' => 'weekly'
     ),
     // Топики пользователя
     'my' => array (
-        'sitemap_priority' => '0.8',
-        'sitemap_changefreq' => 'weekly'
+        'priority' => '0.8',
+        'changefreq' => 'weekly'
     ),
 );
 

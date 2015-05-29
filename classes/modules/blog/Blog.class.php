@@ -1,25 +1,22 @@
 <?php
+/*---------------------------------------------------------------------------
+ * @Project: Alto CMS
+ * @Project URI: http://altocms.com
+ * @Description: Advanced Community Engine
+ * @Copyright: Alto CMS Team
+ * @License: GNU GPL v2 & MIT
+ *----------------------------------------------------------------------------
+ * Based on
+ *   Plugin Sitemap for LiveStreet CMS
+ *   Author: Stepan Tanasiychuk
+ *   Site: http://stfalcon.com
+ *----------------------------------------------------------------------------
+ */
 
 /**
  * Модуль Blog плагина Sitemap
  */
-class PluginSitemap_ModuleBlog extends Module {
-
-    /**
-     * Mapper
-     * @var PluginSitemap_ModuleBlog_MapperBlog
-     */
-    protected $oMapper;
-
-    /**
-     * Инициализация
-     *
-     * @return void
-     */
-    public function Init() {
-
-        $this->oMapper = Engine::GetMapper(__CLASS__);
-    }
+class PluginSitemap_ModuleBlog extends PluginSitemap_Inherits_ModuleBlog {
 
     /**
      * Количество коллективных блогов
@@ -28,37 +25,37 @@ class PluginSitemap_ModuleBlog extends Module {
      */
     public function GetBlogsCountForSitemap() {
 
-        // @todo это количество должно ТОЧНО совпадать с тем которое будет тянутся родным методом.
-        // поэтому возможно лучше продублировать этот код в маппере плагина
-        return (int) $this->oMapper->getCountOfOpenBlogs();
+        $aBlogTypes = $this->GetOpenBlogTypes();
+        $aInfo = $this->oMapper->GetBlogCountsByTypes($aBlogTypes);
+        return empty($aInfo) ? 0 : array_sum($aInfo);
     }
 
     /**
      * Список коллективных блогов (с кешированием)
      *
-     * @param integer $iCurrPage
+     * @param integer $iPage
      *
      * @return array
      */
-    public function GetBlogsForSitemap($iCurrPage = 0) {
+    public function GetBlogsForSitemap($iPage = 1) {
 
-        $sCacheKey = $this->PluginSitemap_Sitemap_GetCacheIdPrefix()
-                     . "sitemap_blogs_{$iCurrPage}_" . Config::Get('plugin.sitemap.objects_per_page');
+        $sCacheKey = "sitemap_blogs_{$iPage}_" . C::Get('plugin.sitemap.items_per_page');
 
-        if (false === ($aData = $this->Cache_Get($sCacheKey))) {
-            $iCount = 0;
-            $aBlogsId = $this->oMapper->getIdsOfOpenBlogs($iCount, $iCurrPage, Config::Get('plugin.sitemap.objects_per_page'));
-            $aBlogs = $this->Blog_GetBlogsAdditionalData($aBlogsId, array('owner' => array()));
+        if (false === ($aData = E::ModuleCache()->Get($sCacheKey))) {
+            $aFilter = array(
+                'include_type' => $this->GetOpenBlogTypes(),
+            );
+            $aBlogs = E::ModuleBlog()->GetBlogsByFilter($aFilter, $iPage, C::Get('plugin.sitemap.items_per_page'), array('owner' => array()));
 
             $aData = array();
-            foreach ($aBlogs as $oBlog) {
-                // @todo временем последнего изменения блога должно
-                // быть время его обновления (публикация последнего топика),
-                $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
-                        $oBlog->getUrlFull(),
+            /** @var ModuleBlog_EntityBlog $oBlog */
+            foreach ($aBlogs['collection'] as $oBlog) {
+                // TODO временем последнего изменения блога должно быть время его обновления (публикация последнего топика),
+                $aData[] = E::ModuleSitemap()->GetDataForSitemapRow(
+                        $oBlog->getLink(),
                         null,
-                        Config::Get('plugin.sitemap.blogs.sitemap_priority'),
-                        Config::Get('plugin.sitemap.blogs.sitemap_changefreq')
+                        C::Get('plugin.sitemap.type.blogs.changefreq'),
+                        C::Get('plugin.sitemap.type.blogs.priority')
                 );
 
                 // @todo страницы блога разбиты на подстраницы. значит нужно генерировать
@@ -66,7 +63,7 @@ class PluginSitemap_ModuleBlog extends Module {
                 // т.е. тянуть количество топиков блога
             }
 
-            $this->Cache_Set($aData, $sCacheKey, array('blog_new'), Config::Get('plugin.sitemap.blogs.cache_lifetime'));
+            E::ModuleCache()->Set($aData, $sCacheKey, array('blog_new'), C::Get('plugin.sitemap.type.blogs.cache_lifetime'));
         }
         
         return $aData;

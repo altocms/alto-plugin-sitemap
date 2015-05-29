@@ -33,10 +33,16 @@ class PluginSitemap extends Plugin {
      */
     protected $aInherits = array(
         'entity' => array(
-            'ModuleBlog_EntityBlog' => '_ModuleBlog_EntityBlog',
-            'ModuleTopic_EntityTopic' => '_ModuleTopic_EntityTopic',
-            'ModuleUser_EntityUser' => '_ModuleUser_EntityUser',
+            'ModuleBlog_EntityBlog',
+            'ModuleTopic_EntityTopic',
+            'ModuleUser_EntityUser',
         ),
+        'module' => array(
+            'ModuleSitemap',
+            'ModuleTopic',
+            'ModuleBlog',
+            'ModuleUser',
+        )
     );
 
     /**
@@ -45,15 +51,18 @@ class PluginSitemap extends Plugin {
      * @return boolean
      */
     public function Activate() {
+
         return true;
     }
 
     /**
      * Инициализация плагина
      *
-     * @return void
+     * @return boolean
      */
     public function Init() {
+
+        return true;
     }
 
     /**
@@ -62,6 +71,7 @@ class PluginSitemap extends Plugin {
      * @return boolean
      */
     public function Deactivate() {
+
         return true;
     }
 

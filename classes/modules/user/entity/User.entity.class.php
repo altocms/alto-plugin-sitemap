@@ -13,7 +13,7 @@
  *----------------------------------------------------------------------------
  */
 
-class PluginSitemap_ModuleUser_EntityUser extends PluginSitemap_Inherit_ModuleUser_EntityUser {
+class PluginSitemap_ModuleUser_EntityUser extends PluginSitemap_Inherits_ModuleUser_EntityUser {
 
     /**
      * Get date of last user modification
@@ -30,7 +30,7 @@ class PluginSitemap_ModuleUser_EntityUser extends PluginSitemap_Inherit_ModuleUs
      *
      * @return string
      */
-    public function getUserCommentsWebPath() {
+    public function getUserCommentsLink() {
 
         return Router::GetPath('my') . $this->getLogin() . '/comment/';
     }
@@ -40,7 +40,7 @@ class PluginSitemap_ModuleUser_EntityUser extends PluginSitemap_Inherit_ModuleUs
      *
      * @return string
      */
-    public function getUserTopicsWebPath() {
+    public function getUserTopicsLink() {
 
         return Router::GetPath('my') . $this->getLogin() . '/';
     }

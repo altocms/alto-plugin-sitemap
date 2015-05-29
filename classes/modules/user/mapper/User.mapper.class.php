@@ -16,7 +16,7 @@
 /**
  * Маппер User модуля User плагина Sitemap
  */
-class PluginSitemap_ModuleUser_MapperUser extends Mapper {
+class PluginSitemap_ModuleUser_MapperUser extends PluginSitemap_Inherits_ModuleUser_MapperUser {
 
     /**
      * Список ID активированных пользователей

@@ -16,7 +16,7 @@
 /**
  * Модуль User плагина Sitemap
  */
-class PluginSitemap_ModuleUser extends Module {
+class PluginSitemap_ModuleUser extends PluginSitemap_Inherits_ModuleUser {
 
     /**
      * Маппер
@@ -42,55 +42,58 @@ class PluginSitemap_ModuleUser extends Module {
      */
     public function getUsersCountForSitemap() {
 
-        $aStatUsers = $this->User_GetStatUsers();
+        $aStatUsers = E::ModuleUser()->GetStatUsers();
         return $aStatUsers['count_all'];
     }
 
     /**
      * Список пользователей (с кешированием)
      *
-     * @param integer $iCurrPage
+     * @param integer $iPage
+     *
      * @return array
      */
-    public function getUsersForSitemap($iCurrPage) {
+    public function getUsersForSitemap($iPage) {
 
-        $iPerPage = Config::Get('plugin.sitemap.users_per_page');
+        $iPerPage = C::Get('plugin.sitemap.users_per_page');
 
-        $sCacheKey = $this->PluginSitemap_Sitemap_GetCacheIdPrefix()
-                     . "sitemap_users_{$iCurrPage}_{$iPerPage}";
+        $sCacheKey = "sitemap_users_{$iPage}_{$iPerPage}";
 
-        if (false === ($aData = $this->Cache_Get($sCacheKey))) {
-            $aUsersId = $this->oMapper->getUsersId($iCount, $iCurrPage, $iPerPage);
-            $aUsers = $this->User_GetUsersByArrayId($aUsersId);
+        if (false === ($aData = E::ModuleCache()->Get($sCacheKey))) {
+            $aFilter = array(
+                'activate' => 1
+            );
+            $aUsers = E::ModuleUser()->GetUsersByFilter($aFilter, array(), $iPage, $iPerPage);
 
             $aData = array();
-            foreach ($aUsers as $oUser) {
+            /** @var ModuleUser_EntityUser $oUser */
+            foreach ($aUsers['collection'] as $oUser) {
                 // профиль пользователя
-                $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
-                        $oUser->getUserWebPath(),
-                        $oUser->getDateLastMod(),
-                        Config::Get('plugin.sitemap.users.profile.sitemap_priority'),
-                        Config::Get('plugin.sitemap.users.profile.sitemap_changefreq')
+                $aData[] = E::ModuleSitemap()->GetDataForSitemapRow(
+                    $oUser->getProfileUrl(),
+                    $oUser->getDateLastMod(),
+                    C::Get('plugin.sitemap.type.users.profile.changefreq'),
+                    C::Get('plugin.sitemap.type.users.profile.priority')
                 );
 
                 // публикации пользователя
-                $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
-                        $oUser->getUserTopicsWebPath(),
-                        // @todo временем изменения страницы публикаций должно быть время последней публикации пользователя
-                        null,
-                        Config::Get('plugin.sitemap.users.my.sitemap_priority'),
-                        Config::Get('plugin.sitemap.users.my.sitemap_changefreq')
+                $aData[] = E::ModuleSitemap()->GetDataForSitemapRow(
+                    $oUser->getUserTopicsLink(),
+                    // TODO временем изменения страницы публикаций должно быть время последней публикации пользователя
+                    null,
+                    C::Get('plugin.sitemap.type.users.my.changefreq'),
+                    C::Get('plugin.sitemap.type.users.my.priority')
                 );
 
                 // комментарии пользователя
-                $aData[] = $this->PluginSitemap_Sitemap_GetDataForSitemapRow(
-                        $oUser->getUserCommentsWebPath(),
-                        $oUser->getDateCommentLast(),
-                        Config::Get('plugin.sitemap.users.comments.sitemap_priority'),
-                        Config::Get('plugin.sitemap.users.comments.sitemap_changefreq')
+                $aData[] = E::ModuleSitemap()->GetDataForSitemapRow(
+                    $oUser->getUserCommentsLink(),
+                    $oUser->getDateCommentLast(),
+                    C::Get('plugin.sitemap.type.users.comments.changefreq'),
+                    C::Get('plugin.sitemap.type.users.comments.priority')
                 );
 
-                $this->Cache_Set($aData, $sCacheKey, array('user_new', 'user_update'), Config::Get('plugin.sitemap.users.cache_lifetime'));
+                E::ModuleCache()->Set($aData, $sCacheKey, array('user_new', 'user_update'), C::Get('plugin.sitemap.type.users.cache_lifetime'));
             }
         }
 

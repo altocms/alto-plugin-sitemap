@@ -29,156 +29,130 @@ class PluginSitemap_ModuleSitemap extends Module {
     /**
      * Конвертирует дату в формат W3C Datetime
      *
-     * @param mixed $mDate - UNIX timestamp или дата в формате понимаемом функцией strtotime()
+     * @param mixed $xDate - UNIX timestamp или дата в формате понимаемом функцией strtotime()
+     *
      * @return string - дата в формате W3C Datetime (http://www.w3.org/TR/NOTE-datetime)
      */
-    private function _convDateToLastMod($mDate = null) {
+    protected function _convDateToLastMod($xDate = null) {
 
-        if (is_null($mDate)) {
+        if (is_null($xDate)) {
             return null;
         }
-        
-        $mDate = is_int($mDate) ? $mDate : strtotime($mDate);
-        return date('Y-m-d\TH:i:s+00:00', $mDate);
+        $xDate = is_int($xDate) ? $xDate : strtotime($xDate);
+
+        return date('Y-m-d\TH:i:s+00:00', $xDate);
+    }
+
+    protected function _getLastDateOfTopics() {
+
+        $sDate = null;
+        $aTopics = E::ModuleTopic()->GetTopicsLast(1);
+        if ($aTopics['collection']) {
+            $oTopic = reset($aTopics['collection']);
+            $sDate = $oTopic->getDateLastMod();
+        }
+        $aComments = E::ModuleComment()->GetCommentsOnline('topic', 1);
+        if ($aComments) {
+            $oComment = reset($aComments);
+            if ($oComment->getDateEdit() && $oComment->getDateEdit() > $sDate) {
+                $sDate = $oComment->getCommentDateEdit();
+            } elseif ($oComment->getCommentDate() > $sDate) {
+                $sDate = $oComment->getCommentDate();
+            }
+        }
+        return $sDate;
     }
 
     /**
      * Возвращает массив с данными для генерации sitemap'а
      *
      * @param string $sUrl
-     * @param mixed $sLastMod
-     * @param mixed $sChangeFreq
-     * @param mixed $sPriority
-     * @return array 
+     * @param string $sLastMod
+     * @param string $sChangeFreq
+     * @param float  $nPriority
+     *
+     * @return array
      */
-    public function getDataForSitemapRow($sUrl, $sLastMod = null, $sChangeFreq = null, $sPriority = null) {
+    public function getDataForSitemapRow($sUrl, $sLastMod = null, $sChangeFreq = null, $nPriority = null) {
 
-        return array(
+        $aItem = array(
             'loc' => $sUrl,
-            'lastmod' => $this->_convDateToLastMod($sLastMod),
-            'priority' => $sChangeFreq,
-            'changefreq' => $sPriority,
         );
-    }
-
-    /**
-     * Этот метод переопределяется в других плагинах и добавляет их наборы данных
-     * к основному набору
-     *
-     * @return array
-     */
-    public function getExternalCounters() {
-
-        return array();
-    }
-
-
-    /**
-     * Этот метод переопределяется в других плагинах и добавляет нужные ссылки на
-     * сайтмапы к основному набору ссылок
-     *
-     * @return array
-     */
-    public function getExternalLinks() {
-
-        return array();
-    }
-
-    /**
-     * Генерирует преффикс для кеша
-     *
-     * @return string
-     */
-    public function getCacheIdPrefix() {
-
-        return '';
+        if (!empty($sLastMod)) {
+            $aItem['lastmod'] = $this->_convDateToLastMod($sLastMod);
+        }
+        if (!empty($sChangeFreq)) {
+            $aItem['changefreq'] = $sChangeFreq;
+        }
+        if (!empty($nPriority)) {
+            $aItem['priority'] = $nPriority;
+        }
+        return $aItem;
     }
 
     /**
      * Данные для Sitemap общих страниц сайта
      *
-     * @param integer $iCurrPage
      * @return array
      */
-    public function getDataForGeneral($iCurrPage) {
+    public function getDataForGeneral() {
 
-        $sRootUrl = F::File_RootUrl(true);
         $aData = array();
-        $aData[] = $this->GetDataForSitemapRow(
-            $sRootUrl,
-            time(),
-            Config::Get('plugin.sitemap.general.mainpage.sitemap_priority'),
-            Config::Get('plugin.sitemap.general.mainpage.sitemap_changefreq')
-        );
-        $aData[] = $this->GetDataForSitemapRow(
-            $sRootUrl . 'comments/',
-            null, //time(),
-            Config::Get('plugin.sitemap.general.comments.sitemap_priority'),
-            Config::Get('plugin.sitemap.general.comments.sitemap_changefreq')
-        );
+        $aUrls = C::Get('plugin.sitemap.type.general.url');
+        foreach($aUrls as $aItem) {
+            if (!empty($aItem['loc'])) {
+                $aData[] = $this->GetDataForSitemapRow(
+                    $aItem['loc'],
+                    time(),
+                    !empty($aItem['changefreq']) ? $aItem['changefreq'] : C::Get('plugin.sitemap.default.url.changefreq'),
+                    !empty($aItem['priority']) ? $aItem['priority'] : C::Get('plugin.sitemap.default.url.priority')
+                );
+            }
+        }
+
         return $aData;
     }
 
     /**
-     * Данные для Sitemap открытых коллективных блогов
+     * Get sitemap data for the sitemap data and page
      *
-     * @param integer $iCurrPage
+     * @param string $sType
+     * @param int    $iPage
+     *
      * @return array
      */
-    public function getDataForBlogs($iCurrPage) {
+    public function GetDataFor($sType, $iPage) {
 
-        return $this->PluginSitemap_Blog_GetBlogsForSitemap($iCurrPage);
-    }
-
-    /**
-     * Данные для Sitemap опубликованных топиков
-     *
-     * @param integer $iCurrPage
-     * @return void
-     */
-    public function getDataForTopics($iCurrPage) {
-
-        return $this->PluginSitemap_Topic_GetTopicsForSitemap($iCurrPage);
-    }
-
-    /**
-     * Данные для Sitemap пользовательских профилей, топиков и комментариев
-     *
-     * @param integer $iCurrPage
-     * @return void
-     */
-    public function getDataForUsers($iCurrPage) {
-
-        return $this->PluginSitemap_User_GetUsersForSitemap($iCurrPage);
+        if ($iPage < 1) {
+            $iPage = 1;
+        }
+        switch ($sType) {
+            case 'general':
+                $aData = $this->getDataForGeneral();
+                break;
+            case 'topics':
+                $aData = E::ModuleTopic()->GetTopicsForSitemap($iPage);
+                break;
+            case 'blogs':
+                $aData = E::ModuleBlog()->GetBlogsForSitemap($iPage);
+                break;
+            case 'users':
+                $aData = $this->PluginSitemap_User_GetUsersForSitemap($iPage);
+                break;
+            default:
+                $aData = array();
+        }
+        return $aData;
     }
 
     public function GetLastMod($sType, $iPage) {
 
         $sDate = null;
-        if ($sType == 'general') {
-            $aTopics = $this->Topic_GetTopicsLast(1);
-            if ($aTopics) {
-                $oTopic = reset($aTopics);
-                if ($oTopic->getTopicDateEdit()) {
-                    $sDate = $oTopic->getTopicDateEdit();
-                } elseif ($oTopic->getTopicDateShow()) {
-                    $sDate = $oTopic->getTopicDateShow();
-                } else {
-                    $sDate = $oTopic->getTopicDateAdd();
-                }
-            }
-            $aComments = $this->Comment_GetCommentsOnline('topic', 1);
-            if ($aComments) {
-                $oComment = reset($aComments);
-                if ($oComment->getDateEdit()) {
-                    $sDate = $oComment->getCommentDateEdit();
-                } else {
-                    $sDate = $oComment->getCommentDate();
-                }
-            }
+        if ($sType == 'general' || ($sType == 'topics' && $iPage == 1)) {
+            $sDate = $this->_getLastDateOfTopics();
         }
-        if ($sDate && strpos($sDate, ' ')) {
-            $sDate = str_replace(' ', 'T', $sDate);
+        if ($sDate) {
+            $sDate = $this->_convDateToLastMod($sDate);
         }
 
         return $sDate;

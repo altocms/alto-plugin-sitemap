@@ -42,7 +42,10 @@ class PluginSitemap extends Plugin {
             'ModuleTopic',
             'ModuleBlog',
             'ModuleUser',
-        )
+        ),
+        'mapper' => array(
+            'ModuleUser_MapperUser',
+        ),
     );
 
     /**

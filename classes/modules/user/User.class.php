@@ -25,17 +25,6 @@ class PluginSitemap_ModuleUser extends PluginSitemap_Inherits_ModuleUser {
     protected $oMapper;
 
     /**
-     * Инициализация модуля
-     *
-     * @return void
-     */
-    public function Init() {
-
-        $this->oMapper = Engine::GetMapper(__CLASS__);
-    }
-
-
-    /**
      * Количество пользователей
      *
      * @return integer

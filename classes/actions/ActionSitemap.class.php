@@ -123,6 +123,12 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
         return $iCount;
     }
 
+    /**
+     * @param string $sType
+     * @param int    $iPage
+     *
+     * @return string
+     */
     protected function _getSitemapLastmod($sType, $iPage) {
 
         if ($iPage < 1) {
@@ -131,11 +137,23 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
         return E::ModuleSitemap()->GetLastMod($sType, $iPage);
     }
 
+    /**
+     * @param string $sType
+     * @param int    $iPage
+     *
+     * @return array
+     */
     protected function _getSitemapData($sType, $iPage) {
 
         if ($iPage < 1) {
             $iPage = 1;
         }
+        $sCacheKey = 'sitemap_data_' . $sType . '_' . $iPage;
+        $aItem = E::ModuleCache()->Get($sCacheKey, ',file');
+        if ($aItem !== false) {
+            return $aItem;
+        }
+
         $sChangeFreq = C::Get('plugin.sitemap.' . $sType . '.changefreq');
         if (!$sChangeFreq) {
             $sChangeFreq = C::Get('plugin.sitemap.default.sitemap.changefreq');
@@ -158,6 +176,13 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
         if ($sLastMod) {
             $aItem['lastmod'] = $sLastMod;
         }
+
+        if (isset($this->aPeriods[$sChangeFreq])) {
+            $sCacheTime = $this->aPeriods[$sChangeFreq];
+        } else {
+            $sCacheTime = 'PT1H';
+        }
+        E::ModuleCache()->Set($aItem, $sCacheKey, array('sitemap'), $sCacheTime, ',file');
 
         return $aItem;
     }
@@ -203,7 +228,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
     }
 
     /**
-     * Save sitemap conten in cache
+     * Save sitemap content in cache
      *
      * @param $sType
      * @param $sContent
@@ -219,7 +244,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      *
      * @param string       $sCacheKey
      * @param string|array $xData
-     * @param string       $sTemplate
+     * @param null|string  $sTemplate
      */
     protected function _displaySitemap($sCacheKey, $xData, $sTemplate = 'sitemap.tpl') {
 
@@ -238,7 +263,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
             if (!$sPeriod) {
                 $sPeriod = 'P1D';
             }
-            //$this->_setCache($sCacheKey, $sSiteMapContent, $sPeriod);
+            $this->_setCache($sCacheKey, $sSiteMapContent, $sPeriod);
         } else {
             $sSiteMapContent = $xData;
         }

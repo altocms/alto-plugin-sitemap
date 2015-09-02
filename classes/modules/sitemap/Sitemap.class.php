@@ -46,7 +46,10 @@ class PluginSitemap_ModuleSitemap extends Module {
     protected function _getLastDateOfTopics() {
 
         $sDate = null;
-        $aTopics = E::ModuleTopic()->GetTopicsLast(1);
+        //$aTopics = E::ModuleTopic()->GetTopicsLast(1);
+        $aFilter = E::ModuleTopic()->GetNamedFilter('default', array('accessible' => true));
+        $aTopics = E::ModuleTopic()->GetTopicsByFilter($aFilter, 1, 1, array());
+
         if ($aTopics['collection']) {
             $oTopic = reset($aTopics['collection']);
             $sDate = $oTopic->getDateLastMod();

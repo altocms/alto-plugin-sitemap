@@ -203,15 +203,17 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
         $aTypeList = $this->_getSitemapTypes();
 
         // Генерируем ссылки на конечные Sitemap'ы для Sitemap Index
+        $aAvailableTypes = F::Array_Str2Array(C::Get('plugin.sitemap.type.index.sitemap'));
         $aData = array();
-        foreach ($aTypeList as $sType) {
-            $iCount = $this->_getSitemapCount($sType);
-            for($iPage = 1; $iPage <= $iCount; $iPage++) {
-                $aItem = $this->_getSitemapData($sType, $iPage);
-                $aData[] = $aItem;
+        foreach ($aAvailableTypes as $sType) {
+            if (in_array($sType, $aTypeList)) {
+                $iCount = $this->_getSitemapCount($sType);
+                for($iPage = 1; $iPage <= $iCount; $iPage++) {
+                    $aItem = $this->_getSitemapData($sType, $iPage);
+                    $aData[] = $aItem;
+                }
             }
         }
-
         $this->_displaySitemap('index', $aData, 'sitemap_index.tpl');
     }
 

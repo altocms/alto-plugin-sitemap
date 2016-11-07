@@ -88,7 +88,12 @@ class PluginSitemap_ModuleSitemap extends Module {
             $aItem['changefreq'] = $sChangeFreq;
         }
         if (!empty($nPriority)) {
-            $aItem['priority'] = $nPriority;
+            if (is_string($nPriority)) {
+                $nPriority = str_replace(',', '.', $nPriority);
+            }
+            if (is_numeric($nPriority) && ($nPriority > 0.01)) {
+                $aItem['priority'] = $nPriority;
+            }
         }
         return $aItem;
     }

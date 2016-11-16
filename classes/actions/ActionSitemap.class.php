@@ -244,7 +244,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      * Display content of sitemap and save it in cache
      *
      * @param string       $sCacheKey
-     * @param string|array $xData
+     * @param array|string $xData
      * @param null|string  $sTemplate
      */
     protected function _displaySitemap($sCacheKey, $xData, $sTemplate = 'sitemap.tpl') {
@@ -254,7 +254,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
             $sTemplate = Plugin::GetTemplateDir('sitemap') . 'tpls/' . $sTemplate;
             $sSiteMapContent = E::ModuleViewer()->Fetch($sTemplate, array('aData' => $xData));
             $sPeriod = C::Get();
-            foreach($xData as $aItem) {
+            foreach((array)$xData as $aItem) {
                 if (!empty($aItem['changefreq'])) {
                     if (in_array($aItem['changefreq'], $this->aPeriods)) {
                         $sPeriod = $this->aPeriods[$aItem['changefreq']];

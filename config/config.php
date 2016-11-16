@@ -21,8 +21,9 @@ $config['$root$']['router']['uri'] = array(
     '[/^sitemap_(\w+)_(\d+)\.xml$/i]' => 'sitemap/sitemap/$1/$2',
 );
 
+$config['cache'] = true;
+
 $config['items_per_page'] = 100;   // максимальное количество ссылок на одной странице карты
-$config['users_per_page'] = 100;   // максимальное количество пользователей на одной странице карты
 
 $config['default'] = array(
     'sitemap' => array(
@@ -65,11 +66,13 @@ $config['type']['general'] = array (
             'changefreq' => 'hourly'
         ),
         // Страница комментариев
-        'comments' => array (
-            'loc' => '___path.root.url___/comments/',
-            'priority' => '0.7',
-            'changefreq' => 'hourly'
-        ),
+        // Доступ к странице комментариев закрыт по умолчанию в robots.txt, поэтому если давать индексировать эту страницу,
+        // то разрешать нужно и здесь, и в robots.txt
+        //'comments' => array (
+        //    'loc' => '___path.root.url___/comments/',
+        //    'priority' => '0.7',
+        //    'changefreq' => 'hourly'
+        //),
     ),
 );
 // Записи

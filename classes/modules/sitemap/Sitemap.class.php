@@ -35,7 +35,7 @@ class PluginSitemap_ModuleSitemap extends Module {
      */
     protected function _convDateToLastMod($xDate = null) {
 
-        if (is_null($xDate)) {
+        if (null === $xDate) {
             return null;
         }
         $xDate = is_int($xDate) ? $xDate : strtotime($xDate);
@@ -43,6 +43,9 @@ class PluginSitemap_ModuleSitemap extends Module {
         return date('Y-m-d\TH:i:s+00:00', $xDate);
     }
 
+    /**
+     * @return string
+     */
     protected function _getLastDateOfTopics() {
 
         $sDate = null;
@@ -72,7 +75,7 @@ class PluginSitemap_ModuleSitemap extends Module {
      * @param string $sUrl
      * @param string $sLastMod
      * @param string $sChangeFreq
-     * @param float  $nPriority
+     * @param float|string  $nPriority
      *
      * @return array
      */
@@ -106,10 +109,10 @@ class PluginSitemap_ModuleSitemap extends Module {
     public function getDataForGeneral() {
 
         $aData = array();
-        $aUrls = C::Get('plugin.sitemap.type.general.url');
+        $aUrls = (array)C::Get('plugin.sitemap.type.general.url');
         foreach($aUrls as $aItem) {
             if (!empty($aItem['loc'])) {
-                $aData[] = $this->GetDataForSitemapRow(
+                $aData[] = $this->getDataForSitemapRow(
                     $aItem['loc'],
                     time(),
                     !empty($aItem['changefreq']) ? $aItem['changefreq'] : C::Get('plugin.sitemap.default.url.changefreq'),
@@ -122,6 +125,16 @@ class PluginSitemap_ModuleSitemap extends Module {
     }
 
     /**
+     * @param string $sType
+     *
+     * @return int
+     */
+    public function getItemsCountFor($sType)
+    {
+        return 1;
+    }
+
+    /**
      * Get sitemap data for the sitemap data and page
      *
      * @param string $sType
@@ -129,7 +142,7 @@ class PluginSitemap_ModuleSitemap extends Module {
      *
      * @return array
      */
-    public function GetDataFor($sType, $iPage) {
+    public function getDataFor($sType, $iPage) {
 
         if ($iPage < 1) {
             $iPage = 1;
@@ -153,10 +166,10 @@ class PluginSitemap_ModuleSitemap extends Module {
         return $aData;
     }
 
-    public function GetLastMod($sType, $iPage) {
+    public function getLastMod($sType, $iPage) {
 
         $sDate = null;
-        if ($sType == 'general' || ($sType == 'topics' && $iPage == 1)) {
+        if ($sType === 'general' || ($sType === 'topics' && $iPage == 1)) {
             $sDate = $this->_getLastDateOfTopics();
         }
         if ($sDate) {

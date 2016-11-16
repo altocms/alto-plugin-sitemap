@@ -20,6 +20,8 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
 
     protected $aPeriods = array();
 
+    protected $bCacheMode = true;
+
     /**
      * Инициализация
      *
@@ -39,6 +41,38 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
 
         $this->SetDefaultEvent('index');
         Router::SetIsShowStats(false);
+        if (C::Get('plugin.sitemap.cache') !== null) {
+            $this->bCacheMode = (bool)C::Get('plugin.sitemap.cache');
+        }
+    }
+
+    /**
+     * Load sitemap content from cache
+     *
+     * @param $sType
+     *
+     * @return bool|mixed
+     */
+    protected function _getCache($sType) {
+
+        if ($this->bCacheMode) {
+            return E::ModuleCache()->Get('plugin.sitemap.' . $sType, ',file');
+        }
+        return null;
+    }
+
+    /**
+     * Save sitemap content in cache
+     *
+     * @param $sType
+     * @param $sContent
+     * @param $sPeriod
+     */
+    protected function _setCache($sType, $sContent, $sPeriod) {
+
+        if ($this->bCacheMode) {
+            E::ModuleCache()->Set($sContent, 'plugin.sitemap.' . $sType, array(), $sPeriod, ',file');
+        }
     }
 
     /**
@@ -53,6 +87,36 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
     }
 
     /**
+     * Генерирует карту Sitemap-ов, разбивая каждый тип сущностей на наборы
+     *
+     * @return void
+     */
+    public function EventSitemapIndex() {
+
+        $sSiteMapContent = $this->_getCache('index');
+        if ($sSiteMapContent) {
+            $this->_displaySitemap('index', $sSiteMapContent);
+            return;
+        }
+
+        $aTypeList = $this->_getSitemapTypes();
+
+        // Генерируем ссылки на конечные Sitemap'ы для Sitemap Index
+        $aAvailableTypes = F::Array_Str2Array(C::Get('plugin.sitemap.type.index.sitemap'));
+        $aData = array();
+        foreach ($aAvailableTypes as $sType) {
+            if (in_array($sType, $aTypeList)) {
+                $iCount = $this->_getSitemapIndexCount($sType);
+                for($iPage = 1; $iPage <= $iCount; $iPage++) {
+                    $aItem = $this->_getSitemapIndexData($sType, $iPage);
+                    $aData[] = $aItem;
+                }
+            }
+        }
+        $this->_displaySitemap('index', $aData, 'sitemap_index.tpl');
+    }
+
+    /**
      * Генерирует Sitemap
      *
      * @return string|null
@@ -60,7 +124,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
     public function EventSitemap() {
 
         $sType = $this->GetParam(0);
-        $iPage = intval($this->GetParam(1));
+        $iPage = (int)$this->GetParam(1);
         $sCacheKey = $sType . '_' . $iPage;
 
         $sSiteMapContent = $this->_getCache($sCacheKey);
@@ -70,7 +134,8 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
         }
 
         try {
-            $aData = E::ModuleSitemap()->GetDataFor($sType, $iPage);
+            $iPerPage = C::Val('plugin.sitemap.items_per_page', 100);
+            $aData = E::ModuleSitemap()->GetDataFor($sType, $iPage, $iPerPage);
         } catch (Exception $e) {
             return $this->EventNotFound();
         }
@@ -100,7 +165,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      *
      * @return int
      */
-    protected function _getSitemapCount($sType) {
+    protected function _getSitemapIndexCount($sType) {
 
         $iPerPage = C::Get('plugin.sitemap.items_per_page');
         switch ($sType) {
@@ -114,10 +179,10 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
                 $iCount = (int)ceil(E::ModuleBlog()->GetBlogsCountForSitemap() / $iPerPage);
                 break;
             case 'users':
-                $iCount = (int)ceil(E::ModuleUser()->GetUsersCountForSitemap() / C::Get('plugin.sitemap.users_per_page'));
+                $iCount = (int)ceil(E::ModuleUser()->GetUsersCountForSitemap() / $iPerPage);
                 break;
             default:
-                $iCount = 1;
+                $iCount = (int)ceil(E::Module('Sitemap')->getItemsCountFor($sType) / $iPerPage);
         }
 
         return $iCount;
@@ -143,7 +208,7 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
      *
      * @return array
      */
-    protected function _getSitemapData($sType, $iPage) {
+    protected function _getSitemapIndexData($sType, $iPage) {
 
         if ($iPage < 1) {
             $iPage = 1;
@@ -154,10 +219,6 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
             return $aItem;
         }
 
-        $sChangeFreq = C::Get('plugin.sitemap.' . $sType . '.changefreq');
-        if (!$sChangeFreq) {
-            $sChangeFreq = C::Get('plugin.sitemap.default.sitemap.changefreq');
-        }
         $nPriority = C::Get('plugin.sitemap.' . $sType . '.priority');
         if (!$nPriority) {
             $nPriority = C::Get('plugin.sitemap.default.sitemap.priority');
@@ -167,9 +228,6 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
         $aItem = array(
             'loc' => F::File_RootUrl(true) . 'sitemap_' . $sType . '_' . $iPage . '.xml'
         );
-        if ($sChangeFreq) {
-            $aItem['changefreq'] = $sChangeFreq;
-        }
         if ($nPriority) {
             $aItem['priority'] = $nPriority;
         }
@@ -177,68 +235,9 @@ class PluginSitemap_ActionSitemap extends ActionPlugin {
             $aItem['lastmod'] = $sLastMod;
         }
 
-        if (isset($this->aPeriods[$sChangeFreq])) {
-            $sCacheTime = $this->aPeriods[$sChangeFreq];
-        } else {
-            $sCacheTime = 'PT1H';
-        }
-        E::ModuleCache()->Set($aItem, $sCacheKey, array('sitemap'), $sCacheTime, ',file');
+        E::ModuleCache()->Set($aItem, $sCacheKey, array('sitemap'), 'PT1H', ',file');
 
         return $aItem;
-    }
-
-    /**
-     * Генерирует карту Sitemap-ов, разбивая каждый тип сущностей на наборы
-     *
-     * @return void
-     */
-    public function EventSitemapIndex() {
-
-        $sSiteMapContent = $this->_getCache('index');
-        if ($sSiteMapContent) {
-            $this->_displaySitemap('index', $sSiteMapContent);
-            return;
-        }
-
-        $aTypeList = $this->_getSitemapTypes();
-
-        // Генерируем ссылки на конечные Sitemap'ы для Sitemap Index
-        $aAvailableTypes = F::Array_Str2Array(C::Get('plugin.sitemap.type.index.sitemap'));
-        $aData = array();
-        foreach ($aAvailableTypes as $sType) {
-            if (in_array($sType, $aTypeList)) {
-                $iCount = $this->_getSitemapCount($sType);
-                for($iPage = 1; $iPage <= $iCount; $iPage++) {
-                    $aItem = $this->_getSitemapData($sType, $iPage);
-                    $aData[] = $aItem;
-                }
-            }
-        }
-        $this->_displaySitemap('index', $aData, 'sitemap_index.tpl');
-    }
-
-    /**
-     * Load sitemap content from cache
-     *
-     * @param $sType
-     *
-     * @return bool|mixed
-     */
-    protected function _getCache($sType) {
-
-        return E::ModuleCache()->Get('plugin.sitemap.' . $sType, ',file');
-    }
-
-    /**
-     * Save sitemap content in cache
-     *
-     * @param $sType
-     * @param $sContent
-     * @param $sPeriod
-     */
-    protected function _setCache($sType, $sContent, $sPeriod) {
-
-        E::ModuleCache()->Set($sContent, 'plugin.sitemap.' . $sType, array(), $sPeriod, ',file');
     }
 
     /**
